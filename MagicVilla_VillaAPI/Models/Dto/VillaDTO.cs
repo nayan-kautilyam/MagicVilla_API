@@ -8,5 +8,6 @@ namespace MagicVilla_VillaAPI.Models.Dto
         [Required]
         [MaxLength(30)]
         public string Name { get; set; }
+        public int RentPrice { get; set; }
     }
 }

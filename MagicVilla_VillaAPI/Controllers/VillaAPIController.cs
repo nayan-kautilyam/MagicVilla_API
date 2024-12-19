@@ -1,6 +1,7 @@
 ﻿using MagicVilla_VillaAPI.Data;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MagicVilla_VillaAPI.Controllers
@@ -82,7 +83,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult PatchVilla(int id, [FromBody] VillaDTO villa)
+        public IActionResult UpdateVilla(int id, [FromBody] VillaDTO villa)
         {
             if(id != villa.Id)
             {
@@ -91,8 +92,34 @@ namespace MagicVilla_VillaAPI.Controllers
 
             var existingVilla = VillaStore.villas.FirstOrDefault(u => u.Id == id);
             existingVilla.Name = villa.Name;
+            existingVilla.RentPrice = villa.RentPrice;
 
             return NoContent();
         }
+
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public IActionResult UpdatePatial(int id, JsonPatchDocument<VillaDTO> villa)
+        {
+            if (id == 0 || villa == null)
+            {
+                return BadRequest();
+            }
+
+            var existingVilla = VillaStore.villas.FirstOrDefault(u => u.Id == id);
+            if(existingVilla == null)
+            {
+                return NotFound();
+            }
+            villa.ApplyTo(existingVilla, ModelState);
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
+        }
     }
+
 }
